@@ -30,3 +30,32 @@ export const createItinerary = async (formData) => {
     throw err
   }
 }
+
+export const getSingleItinerary = async (itineraryId) => {
+  try {
+    const response = await axios.get(`${BASE_URL}/itineraries/${itineraryId}/`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    })
+    return response.data
+  } catch (err) {
+    console.error(err.response ? err.response.data : err)
+    throw err
+  }
+}
+
+export const updateItinerary = async (itineraryId, formData) => {
+  try {
+    const response = await axios.patch(`${BASE_URL}/itineraries/${itineraryId}/`, formData, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    })
+    return response.data
+  } catch (err) {
+    console.error(err.response ? err.response.data : err)
+    throw err
+  }
+}
+

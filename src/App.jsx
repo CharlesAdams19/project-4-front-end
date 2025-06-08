@@ -9,6 +9,7 @@ import ItineraryCreate from './components/ItineraryCreate/ItineraryCreate'
 
 import './App.css'
 import SignOutButton from './components/auth/SignOutButton'
+import ItineraryEdit from './components/ItineraryEdit/ItineraryEdit'
 
 
 import { useContext } from 'react'
@@ -31,13 +32,9 @@ const { user } = useContext(UserContext)
         <Route path="/auth" element={<Auth />} />
         <Route path="/itineraries" element={<ItineraryIndex />} />
         <Route path="/itineraries/new" element={<ItineraryCreate />} />
+        <Route path="/itineraries/:itineraryId/edit" element={<ItineraryEdit />} />
 
-        {/* <Route path="/profile" element={<Profile />} /> */}
-
-        {/* { user
-          ? <Route path="/" element={<Dashboard />} />
-          : <Route path="/" element={<SplashPage />} />
-        } */}
+        
         { user && <SignOutButton /> }
 
       </Routes>
