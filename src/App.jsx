@@ -1,33 +1,46 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { Routes, Route } from 'react-router'
+// import Navbar from './components/Navbar/Navbar'
+import Auth from './pages/Auth'
+import ItineraryIndex from './components/ItineraryIndex/ItineraryIndex'
+import ItineraryCreate from './components/ItineraryCreate/ItineraryCreate'
 
-function App() {
-  const [count, setCount] = useState(0)
+// import MovieShow from './components/MovieShow/MovieShow'
+// import Profile from './components/Profile/Profile'
+
+import './App.css'
+import SignOutButton from './components/auth/SignOutButton'
+
+
+import { useContext } from 'react'
+import { UserContext } from './contexts/UserContext'
+
+
+function App(){
+const { user } = useContext(UserContext)
+
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+        <>
+      {/* <Navbar /> */}
+      <Routes>
+        {/* <Route path="/" element={<HomePage />}/> */}
+        {/* <Route path="/movies" element={<MovieIndex />} /> */}
+        {/* <Route path="/movies/:movieId" element={<MovieShow />} /> */}
+        {/* <Route path="/movies/new" element={<MovieCreate />} />
+        <Route path="/movies/:movieId/edit" element={<MovieUpdate />} /> */}
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/itineraries" element={<ItineraryIndex />} />
+        <Route path="/itineraries/new" element={<ItineraryCreate />} />
+
+        {/* <Route path="/profile" element={<Profile />} /> */}
+
+        {/* { user
+          ? <Route path="/" element={<Dashboard />} />
+          : <Route path="/" element={<SplashPage />} />
+        } */}
+        { user && <SignOutButton /> }
+
+      </Routes>
     </>
   )
 }
