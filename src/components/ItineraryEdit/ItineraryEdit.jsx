@@ -1,14 +1,13 @@
-import { useEffect, useState } from 'react'
-import { Calendar, momentLocalizer } from 'react-big-calendar'
-import { getSingleItinerary, updateItinerary } from '../../services/itineraries'
-import { useParams, useNavigate } from 'react-router'
-
-import 'react-big-calendar/lib/css/react-big-calendar.css'
+import { useState } from 'react'
+import { createItinerary } from '../../services/itineraries'
+import { Calendar } from 'react-big-calendar'
+import enGB from 'date-fns/locale/en-GB'
+import { dateFnsLocalizer } from 'react-big-calendar'
 import { parseISO } from 'date-fns'
 import { format } from 'date-fns'
-import { dateFnsLocalizer } from 'react-big-calendar'
+import { useNavigate } from 'react-router'
 
-import enGB from 'date-fns/locale/en-GB'
+import 'react-big-calendar/lib/css/react-big-calendar.css'
 
 const locales = {
   'en-GB': enGB,
@@ -18,37 +17,24 @@ const localizer = dateFnsLocalizer({
   format,
   parse: parseISO,
   startOfWeek: () => new Date(),
-  getDay: date => date.getDay(),
+  getDay: (date) => date.getDay(),
   locales,
 })
 
-export default function ItineraryEdit() {
-  const { itineraryId } = useParams()
+export default function ItineraryCreate() {
   const navigate = useNavigate()
-
-  const [itinerary, setItinerary] = useState(null)
   const [events, setEvents] = useState([])
 
-  useEffect(() => {
-    async function fetchItinerary() {
-      try {
-        const data = await getSingleItinerary(itineraryId)
-        setItinerary(data)
-        setEvents(
-          data.itinerary_items.map(item => ({
-            id: item.id,
-            title: item.show_name,
-            start: new Date(item.start),
-            end: new Date(item.end),
-            venue: item.venue,
-          }))
-        )
-      } catch (err) {
-        console.error(err)
-      }
-    }
-    fetchItinerary()
-  }, [itineraryId])
+  const [formData, setFormData] = useState({
+    name: '',
+    description: '',
+    start_date: '',
+    end_date: '',
+  })
+
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value })
+  }
 
   const handleSelectSlot = ({ start, end }) => {
     const show_name = prompt('Enter show name:')
@@ -56,7 +42,7 @@ export default function ItineraryEdit() {
 
     if (show_name && venue) {
       const newEvent = {
-        id: Date.now(), // temporary id
+        id: Date.now(),
         title: show_name,
         start,
         end,
@@ -66,16 +52,18 @@ export default function ItineraryEdit() {
     }
   }
 
-  const handleEventDelete = eventId => {
+  const handleEventDelete = (eventId) => {
     if (window.confirm('Delete this event?')) {
-      setEvents(events.filter(event => event.id !== eventId))
+      setEvents(events.filter((event) => event.id !== eventId))
     }
   }
 
-  const handleSave = async () => {
+  const handleSubmit = async (e) => {
+    e.preventDefault()
     try {
-      await updateItinerary(itineraryId, {
-        itinerary_items: events.map(event => ({
+      await createItinerary({
+        ...formData,
+        itinerary_items: events.map((event) => ({
           id: event.id,
           show_name: event.title,
           start: event.start.toISOString(),
@@ -83,18 +71,45 @@ export default function ItineraryEdit() {
           venue: event.venue,
         })),
       })
-      alert('Itinerary updated!')
+      console.log('Itinerary created!')
       navigate('/itineraries')
     } catch (err) {
-      console.error(err)
-      alert('Error saving itinerary')
+      console.error(err.response ? err.response.data : err)
     }
   }
 
   return (
     <>
-      <h2>Edit Itinerary: {itinerary?.name}</h2>
-      <button onClick={handleSave}>Save Itinerary</button>
+      <form onSubmit={handleSubmit}>
+        <h2>Create Itinerary</h2>
+        <input
+          name="name"
+          placeholder="Name"
+          value={formData.name}
+          onChange={handleChange}
+        />
+        <input
+          name="description"
+          placeholder="Description"
+          value={formData.description}
+          onChange={handleChange}
+        />
+        <input
+          name="start_date"
+          type="date"
+          value={formData.start_date}
+          onChange={handleChange}
+        />
+        <input
+          name="end_date"
+          type="date"
+          value={formData.end_date}
+          onChange={handleChange}
+        />
+        <button type="submit">Create</button>
+      </form>
+
+      <h3>Add Shows to Calendar</h3>
       <Calendar
         localizer={localizer}
         events={events}
@@ -102,7 +117,7 @@ export default function ItineraryEdit() {
         endAccessor="end"
         selectable
         onSelectSlot={handleSelectSlot}
-        onSelectEvent={event => handleEventDelete(event.id)}
+        onSelectEvent={(event) => handleEventDelete(event.id)}
         style={{ height: 500, margin: '50px' }}
       />
     </>

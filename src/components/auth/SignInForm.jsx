@@ -1,10 +1,12 @@
 import { useState, useContext } from 'react'
+import { useNavigate } from 'react-router' 
 import { login } from '../../services/auth'
 import { setToken, getUserFromToken } from '../../utils/auth'
 import { UserContext } from '../../contexts/UserContext'
 
 export default function SignInForm() {
   const { setUser } = useContext(UserContext)
+  const navigate = useNavigate()
 
   const [formData, setFormData] = useState({
     username: '',
@@ -22,6 +24,8 @@ export default function SignInForm() {
       setToken(data.access, data.refresh)
       setUser(getUserFromToken())
       console.log('User signed in')
+      navigate('/itineraries')   
+
     } catch (err) {
       console.error(err.response ? err.response.data : err)
     }

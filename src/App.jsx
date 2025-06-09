@@ -1,8 +1,9 @@
 import { Routes, Route } from 'react-router'
-// import Navbar from './components/Navbar/Navbar'
+import Navbar from './components/NavBar/NavBar'
 import Auth from './pages/Auth'
 import ItineraryIndex from './components/ItineraryIndex/ItineraryIndex'
 import ItineraryCreate from './components/ItineraryCreate/ItineraryCreate'
+import { Navigate } from 'react-router'
 
 // import MovieShow from './components/MovieShow/MovieShow'
 // import Profile from './components/Profile/Profile'
@@ -22,13 +23,9 @@ const { user } = useContext(UserContext)
 
   return (
         <>
-      {/* <Navbar /> */}
+      <Navbar />
       <Routes>
-        {/* <Route path="/" element={<HomePage />}/> */}
-        {/* <Route path="/movies" element={<MovieIndex />} /> */}
-        {/* <Route path="/movies/:movieId" element={<MovieShow />} /> */}
-        {/* <Route path="/movies/new" element={<MovieCreate />} />
-        <Route path="/movies/:movieId/edit" element={<MovieUpdate />} /> */}
+        <Route path="/" element={<Navigate to="/itineraries" />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/itineraries" element={<ItineraryIndex />} />
         <Route path="/itineraries/new" element={<ItineraryCreate />} />
