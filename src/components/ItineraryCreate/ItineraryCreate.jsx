@@ -1,55 +1,50 @@
 import { useState } from 'react'
 import { createItinerary } from '../../services/itineraries'
 import { Calendar } from 'react-big-calendar'
-import enGB from 'date-fns/locale/en-GB'
-import { dateFnsLocalizer } from 'react-big-calendar'
-import { parseISO } from 'date-fns'
-import { format } from 'date-fns'
+import localizer from '../../utils/calendarLocalizer'
+import dummyShows from '../../utils/dummyShows'
 import { useNavigate } from 'react-router'
-
 import 'react-big-calendar/lib/css/react-big-calendar.css'
-
-const locales = {
-  'en-GB': enGB,
-}
-
-const localizer = dateFnsLocalizer({
-  format,
-  parse: parseISO,
-  startOfWeek: () => new Date(),
-  getDay: (date) => date.getDay(),
-  locales,
-})
 
 export default function ItineraryCreate() {
   const navigate = useNavigate()
   const [events, setEvents] = useState([])
+  const [selectedShowId, setSelectedShowId] = useState(null)
+  const [selectedShowDate, setSelectedShowDate] = useState('')
 
   const [formData, setFormData] = useState({
     name: '',
-    description: '',
-    start_date: '',
-    end_date: '',
   })
+
+  // Controlled calendar state (this is the FIX):
+  const [calendarView, setCalendarView] = useState('month')
+  const [calendarDate, setCalendarDate] = useState(new Date())
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
   }
 
-  const handleSelectSlot = ({ start, end }) => {
-    const show_name = prompt('Enter show name:')
-    const venue = prompt('Enter venue:')
-
-    if (show_name && venue) {
-      const newEvent = {
-        id: Date.now(),
-        title: show_name,
-        start,
-        end,
-        venue,
-      }
-      setEvents([...events, newEvent])
+  const handleAddToCalendar = () => {
+    if (!selectedShowId || !selectedShowDate) {
+      alert('Please select a show and date')
+      return
     }
+
+    const selectedShow = dummyShows.find((s) => s.id === parseInt(selectedShowId))
+    if (!selectedShow) return
+
+    const startDateTime = new Date(`${selectedShowDate}T${selectedShow.time}`)
+    const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000) // +1 hour
+
+    const newEvent = {
+      id: Date.now(),
+      title: selectedShow.name,
+      start: startDateTime,
+      end: endDateTime,
+      venue: selectedShow.venue,
+    }
+
+    setEvents([...events, newEvent])
   }
 
   const handleEventDelete = (eventId) => {
@@ -78,6 +73,8 @@ export default function ItineraryCreate() {
     }
   }
 
+  const selectedShow = dummyShows.find((s) => s.id === parseInt(selectedShowId))
+
   return (
     <>
       <form onSubmit={handleSubmit}>
@@ -88,38 +85,80 @@ export default function ItineraryCreate() {
           value={formData.name}
           onChange={handleChange}
         />
-        <input
-          name="description"
-          placeholder="Description"
-          value={formData.description}
-          onChange={handleChange}
-        />
-        <input
-          name="start_date"
-          type="date"
-          value={formData.start_date}
-          onChange={handleChange}
-        />
-        <input
-          name="end_date"
-          type="date"
-          value={formData.end_date}
-          onChange={handleChange}
-        />
-        <button type="submit">Create</button>
+        <button type="submit">Save Itinerary</button>
       </form>
 
-      <h3>Add Shows to Calendar</h3>
-      <Calendar
-        localizer={localizer}
-        events={events}
-        startAccessor="start"
-        endAccessor="end"
-        selectable
-        onSelectSlot={handleSelectSlot}
-        onSelectEvent={(event) => handleEventDelete(event.id)}
-        style={{ height: 500, margin: '50px' }}
-      />
+      <div style={{ display: 'flex', marginTop: '20px' }}>
+        {/* Left side: Show search */}
+        <div style={{ width: '30%', padding: '10px', borderRight: '1px solid #ccc' }}>
+          <h3>Search Shows</h3>
+          <select
+            value={selectedShowId || ''}
+            onChange={(e) => setSelectedShowId(e.target.value)}
+          >
+            <option value="" disabled>
+              Select a show
+            </option>
+            {dummyShows.map((show) => (
+              <option key={show.id} value={show.id}>
+                {show.name}
+              </option>
+            ))}
+          </select>
+
+          {selectedShow && (
+            <div style={{ marginTop: '10px' }}>
+              <p>
+                <strong>Venue:</strong> {selectedShow.venue}
+              </p>
+              <p>
+                <strong>Time:</strong> {selectedShow.time}
+              </p>
+              <label>
+                Select date:{' '}
+                <select
+                  value={selectedShowDate}
+                  onChange={(e) => setSelectedShowDate(e.target.value)}
+                >
+                  <option value="" disabled>
+                    Select date
+                  </option>
+                  {selectedShow.dates.map((date) => (
+                    <option key={date} value={date}>
+                      {date}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <button
+                type="button"
+                style={{ display: 'block', marginTop: '10px' }}
+                onClick={handleAddToCalendar}
+              >
+                Add to Calendar
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Right side: Calendar */}
+        <div style={{ flexGrow: 1, padding: '10px' }}>
+          <Calendar
+            localizer={localizer}
+            events={events}
+            startAccessor="start"
+            endAccessor="end"
+            selectable
+            onSelectEvent={(event) => handleEventDelete(event.id)}
+            // Controlled props to fix the nav buttons:
+            view={calendarView}
+            onView={setCalendarView}
+            date={calendarDate}
+            onNavigate={setCalendarDate}
+            style={{ height: 600 }}
+          />
+        </div>
+      </div>
     </>
   )
 }
