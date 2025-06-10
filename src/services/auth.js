@@ -15,7 +15,7 @@ export const register = async (formData) => {
 
 export const login = async (formData) => {
   try {
-    const response = await axios.post(`${BASE_URL}/auth/login/`, formData);
+const response = await axios.post(`${BASE_URL}/users/login/`, formData)
     return response.data;
   } catch (err) {
     console.error(err.response ? err.response.data : err);

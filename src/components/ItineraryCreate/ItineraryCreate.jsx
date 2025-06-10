@@ -16,7 +16,6 @@ export default function ItineraryCreate() {
     name: '',
   })
 
-  // Controlled calendar state (this is the FIX):
   const [calendarView, setCalendarView] = useState('month')
   const [calendarDate, setCalendarDate] = useState(new Date())
 
@@ -89,7 +88,7 @@ export default function ItineraryCreate() {
       </form>
 
       <div style={{ display: 'flex', marginTop: '20px' }}>
-        {/* Left side: Show search */}
+
         <div style={{ width: '30%', padding: '10px', borderRight: '1px solid #ccc' }}>
           <h3>Search Shows</h3>
           <select
@@ -141,7 +140,6 @@ export default function ItineraryCreate() {
           )}
         </div>
 
-        {/* Right side: Calendar */}
         <div style={{ flexGrow: 1, padding: '10px' }}>
           <Calendar
             localizer={localizer}
@@ -150,7 +148,7 @@ export default function ItineraryCreate() {
             endAccessor="end"
             selectable
             onSelectEvent={(event) => handleEventDelete(event.id)}
-            // Controlled props to fix the nav buttons:
+
             view={calendarView}
             onView={setCalendarView}
             date={calendarDate}

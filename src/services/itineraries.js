@@ -59,3 +59,18 @@ export const updateItinerary = async (itineraryId, formData) => {
   }
 }
 
+export const getUserItineraries = async () => {
+  try {
+    const response = await axios.get(`${BASE_URL}/itineraries/`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`
+      }
+    })
+    return response.data
+  } catch (err) {
+    console.error(err.response ? err.response.data : err)
+    throw err
+  }
+}
+
+

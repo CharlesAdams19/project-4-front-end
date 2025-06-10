@@ -1,56 +1,66 @@
-import { useState } from 'react'
-import { createItinerary } from '../../services/itineraries'
+import { useState, useEffect } from 'react'
 import { Calendar } from 'react-big-calendar'
-import enGB from 'date-fns/locale/en-GB'
-import { dateFnsLocalizer } from 'react-big-calendar'
-import { parseISO } from 'date-fns'
-import { format } from 'date-fns'
+import localizer from '../../utils/calendarLocalizer'
+import { getUserItineraries, getSingleItinerary, updateItinerary } from '../../services/itineraries'
 import { useNavigate } from 'react-router'
+import { useContext } from 'react'
+import { UserContext } from '../../contexts/UserContext'
+import DUMMY_SHOWS from '../../utils/dummyShows'
 
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 
-const locales = {
-  'en-GB': enGB,
-}
-
-const localizer = dateFnsLocalizer({
-  format,
-  parse: parseISO,
-  startOfWeek: () => new Date(),
-  getDay: (date) => date.getDay(),
-  locales,
-})
-
-export default function ItineraryCreate() {
+export default function ItineraryEdit() {
   const navigate = useNavigate()
+  const { user } = useContext(UserContext)
+
+  const [userItineraries, setUserItineraries] = useState([])
+  const [selectedItineraryId, setSelectedItineraryId] = useState('')
+  const [selectedItineraryName, setSelectedItineraryName] = useState('')
   const [events, setEvents] = useState([])
 
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    start_date: '',
-    end_date: '',
-  })
+  const [calendarView, setCalendarView] = useState('month')
+  const [calendarDate, setCalendarDate] = useState(new Date())
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
+  const [selectedShowId, setSelectedShowId] = useState(null)
+  const [selectedShowDate, setSelectedShowDate] = useState('')
 
-  const handleSelectSlot = ({ start, end }) => {
-    const show_name = prompt('Enter show name:')
-    const venue = prompt('Enter venue:')
-
-    if (show_name && venue) {
-      const newEvent = {
-        id: Date.now(),
-        title: show_name,
-        start,
-        end,
-        venue,
+  // Fetch user itineraries
+  useEffect(() => {
+    async function fetchUserItineraries() {
+      try {
+        const data = await getUserItineraries()
+        setUserItineraries(data)
+      } catch (err) {
+        console.error('Error fetching user itineraries', err)
       }
-      setEvents([...events, newEvent])
     }
-  }
+    if (user) {
+      fetchUserItineraries()
+    }
+  }, [user])
+
+  // Fetch itinerary items when selectedItineraryId changes
+  useEffect(() => {
+    async function fetchSelectedItinerary() {
+      if (!selectedItineraryId) return
+      try {
+        const data = await getSingleItinerary(selectedItineraryId)
+        setSelectedItineraryName(data.name || '')
+        setEvents(
+          data.itinerary_items.map((item) => ({
+            id: item.id,
+            title: item.show_name,
+            start: new Date(item.start),
+            end: new Date(item.end),
+            venue: item.venue,
+          }))
+        )
+      } catch (err) {
+        console.error('Error fetching selected itinerary', err)
+      }
+    }
+    fetchSelectedItinerary()
+  }, [selectedItineraryId])
 
   const handleEventDelete = (eventId) => {
     if (window.confirm('Delete this event?')) {
@@ -58,11 +68,14 @@ export default function ItineraryCreate() {
     }
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const handleSave = async () => {
+    if (!selectedItineraryId) {
+      alert('Please select an itinerary to save')
+      return
+    }
+
     try {
-      await createItinerary({
-        ...formData,
+      await updateItinerary(selectedItineraryId, {
         itinerary_items: events.map((event) => ({
           id: event.id,
           show_name: event.title,
@@ -71,55 +84,138 @@ export default function ItineraryCreate() {
           venue: event.venue,
         })),
       })
-      console.log('Itinerary created!')
+      alert('Itinerary updated!')
       navigate('/itineraries')
     } catch (err) {
-      console.error(err.response ? err.response.data : err)
+      console.error('Error saving itinerary', err)
+      alert('Error saving itinerary')
     }
   }
 
+  const handleAddToCalendar = () => {
+    if (!selectedShowId || !selectedShowDate) {
+      alert('Please select a show and date')
+      return
+    }
+
+    const selectedShow = DUMMY_SHOWS.find((s) => s.id === parseInt(selectedShowId))
+    if (!selectedShow) return
+
+    const startDateTime = new Date(`${selectedShowDate}T${selectedShow.time}`)
+    const endDateTime = new Date(startDateTime.getTime() + 60 * 60 * 1000) // +1 hour
+
+    const newEvent = {
+      id: Date.now(),
+      title: selectedShow.name,
+      start: startDateTime,
+      end: endDateTime,
+      venue: selectedShow.venue,
+    }
+
+    setEvents([...events, newEvent])
+  }
+
+  const selectedShow = DUMMY_SHOWS.find((s) => s.id === parseInt(selectedShowId))
+
   return (
     <>
-      <form onSubmit={handleSubmit}>
-        <h2>Create Itinerary</h2>
-        <input
-          name="name"
-          placeholder="Name"
-          value={formData.name}
-          onChange={handleChange}
-        />
-        <input
-          name="description"
-          placeholder="Description"
-          value={formData.description}
-          onChange={handleChange}
-        />
-        <input
-          name="start_date"
-          type="date"
-          value={formData.start_date}
-          onChange={handleChange}
-        />
-        <input
-          name="end_date"
-          type="date"
-          value={formData.end_date}
-          onChange={handleChange}
-        />
-        <button type="submit">Create</button>
-      </form>
+      <h2>Edit Itinerary</h2>
 
-      <h3>Add Shows to Calendar</h3>
-      <Calendar
-        localizer={localizer}
-        events={events}
-        startAccessor="start"
-        endAccessor="end"
-        selectable
-        onSelectSlot={handleSelectSlot}
-        onSelectEvent={(event) => handleEventDelete(event.id)}
-        style={{ height: 500, margin: '50px' }}
-      />
+      <label>
+        Select your itinerary:{' '}
+        <select
+          value={selectedItineraryId}
+          onChange={(e) => setSelectedItineraryId(e.target.value)}
+        >
+          <option value="">Select an itinerary</option>
+          {userItineraries.map((itin) => (
+            <option key={itin.id} value={itin.id}>
+              {itin.name}
+            </option>
+          ))}
+        </select>
+      </label>
+
+      {selectedItineraryId && (
+        <>
+          <h3>Editing: {selectedItineraryName}</h3>
+
+          <div style={{ display: 'flex', marginTop: '20px' }}>
+            {/* Left side: Show search */}
+            <div style={{ width: '30%', padding: '10px', borderRight: '1px solid #ccc' }}>
+              <h3>Search Shows</h3>
+              <select
+                value={selectedShowId || ''}
+                onChange={(e) => setSelectedShowId(e.target.value)}
+              >
+                <option value="" disabled>
+                  Select a show
+                </option>
+                {DUMMY_SHOWS.map((show) => (
+                  <option key={show.id} value={show.id}>
+                    {show.name}
+                  </option>
+                ))}
+              </select>
+
+              {selectedShow && (
+                <div style={{ marginTop: '10px' }}>
+                  <p>
+                    <strong>Venue:</strong> {selectedShow.venue}
+                  </p>
+                  <p>
+                    <strong>Time:</strong> {selectedShow.time}
+                  </p>
+                  <label>
+                    Select date:{' '}
+                    <select
+                      value={selectedShowDate}
+                      onChange={(e) => setSelectedShowDate(e.target.value)}
+                    >
+                      <option value="" disabled>
+                        Select date
+                      </option>
+                      {selectedShow.dates.map((date) => (
+
+                        <option key={date} value={date}>
+                          {date}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  <button
+                    type="button"
+                    style={{ display: 'block', marginTop: '10px' }}
+                    onClick={handleAddToCalendar}
+                  >
+                    Add to Calendar
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Right side: Calendar */}
+            <div style={{ flexGrow: 1, padding: '10px' }}>
+              <Calendar
+                localizer={localizer}
+                events={events}
+                startAccessor="start"
+                endAccessor="end"
+                selectable
+                view={calendarView}
+                onView={(view) => setCalendarView(view)}
+                date={calendarDate}
+                onNavigate={(date) => setCalendarDate(date)}
+                onSelectEvent={(event) => handleEventDelete(event.id)}
+                style={{ height: 600 }}
+              />
+              <button style={{ marginTop: '10px' }} onClick={handleSave}>
+                Save Itinerary
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </>
   )
 }

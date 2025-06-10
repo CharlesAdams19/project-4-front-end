@@ -26,6 +26,7 @@ export default function Navbar() {
         <option value="/itineraries">All Itineraries</option>
         <option value="/itineraries/new">Create Itinerary</option>
         <option value="/auth">{user ? 'Switch User' : 'Login/Register'}</option>
+        <option value="/itineraries/edit">Edit Itinerary</option>
         {user && <option value="logout">Logout</option>}
       </select>
       {user && <span style={{ marginLeft: '10px' }}>Logged in as: {user.username}</span>}
