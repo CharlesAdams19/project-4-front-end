@@ -28,7 +28,7 @@ function App() {
     <>
       <Navbar />
       <Routes>
-        <Route path="/" element={<Navigate to="/itineraries" />} />
+        <Route path="/" element={<Navigate to="/auth" />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/itineraries" element={<ItineraryIndex />} />
         <Route path="/itineraries/new" element={<ItineraryCreate />} />
