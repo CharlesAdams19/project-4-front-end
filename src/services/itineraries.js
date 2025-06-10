@@ -73,4 +73,17 @@ export const getUserItineraries = async () => {
   }
 }
 
+export const deleteItinerary = async (itineraryId) => {
+  try {
+    const response = await axios.delete(`${BASE_URL}/itineraries/${itineraryId}/`, {
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+      },
+    })
+    return response.data
+  } catch (err) {
+    console.error(err.response ? err.response.data : err)
+    throw err
+  }
+}
 

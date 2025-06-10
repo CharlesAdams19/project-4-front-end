@@ -1,11 +1,15 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useContext } from 'react'
 import { Calendar } from 'react-big-calendar'
 import localizer from '../../utils/calendarLocalizer'
-import { getUserItineraries, getSingleItinerary, updateItinerary } from '../../services/itineraries'
+import {
+  getUserItineraries,
+  getSingleItinerary,
+  updateItinerary,
+  deleteItinerary,
+} from '../../services/itineraries'
 import { useNavigate } from 'react-router'
-import { useContext } from 'react'
 import { UserContext } from '../../contexts/UserContext'
-import DUMMY_SHOWS from '../../utils/dummyShows'
+import dummyShows from '../../utils/dummyShows'
 
 import 'react-big-calendar/lib/css/react-big-calendar.css'
 
@@ -18,13 +22,14 @@ export default function ItineraryEdit() {
   const [selectedItineraryName, setSelectedItineraryName] = useState('')
   const [events, setEvents] = useState([])
 
-  const [calendarView, setCalendarView] = useState('month')
-  const [calendarDate, setCalendarDate] = useState(new Date())
+  // controlled calendar state:
+  const [view, setView] = useState('month')
+  const [date, setDate] = useState(new Date())
 
+  // search show state:
   const [selectedShowId, setSelectedShowId] = useState(null)
   const [selectedShowDate, setSelectedShowDate] = useState('')
 
-  // Fetch user itineraries
   useEffect(() => {
     async function fetchUserItineraries() {
       try {
@@ -39,7 +44,6 @@ export default function ItineraryEdit() {
     }
   }, [user])
 
-  // Fetch itinerary items when selectedItineraryId changes
   useEffect(() => {
     async function fetchSelectedItinerary() {
       if (!selectedItineraryId) return
@@ -92,13 +96,36 @@ export default function ItineraryEdit() {
     }
   }
 
+  const handleDeleteItinerary = async () => {
+    if (!selectedItineraryId) {
+      alert('Please select an itinerary to delete')
+      return
+    }
+
+    if (window.confirm('Are you sure you want to delete this itinerary?')) {
+      try {
+        await deleteItinerary(selectedItineraryId)
+        alert('Itinerary deleted!')
+        setSelectedItineraryId('')
+        setSelectedItineraryName('')
+        setEvents([])
+        // Refresh user itineraries list
+        const data = await getUserItineraries()
+        setUserItineraries(data)
+      } catch (err) {
+        console.error('Error deleting itinerary', err)
+        alert('Error deleting itinerary')
+      }
+    }
+  }
+
   const handleAddToCalendar = () => {
     if (!selectedShowId || !selectedShowDate) {
       alert('Please select a show and date')
       return
     }
 
-    const selectedShow = DUMMY_SHOWS.find((s) => s.id === parseInt(selectedShowId))
+    const selectedShow = dummyShows.find((s) => s.id === parseInt(selectedShowId))
     if (!selectedShow) return
 
     const startDateTime = new Date(`${selectedShowDate}T${selectedShow.time}`)
@@ -115,7 +142,7 @@ export default function ItineraryEdit() {
     setEvents([...events, newEvent])
   }
 
-  const selectedShow = DUMMY_SHOWS.find((s) => s.id === parseInt(selectedShowId))
+  const selectedShow = dummyShows.find((s) => s.id === parseInt(selectedShowId))
 
   return (
     <>
@@ -151,7 +178,7 @@ export default function ItineraryEdit() {
                 <option value="" disabled>
                   Select a show
                 </option>
-                {DUMMY_SHOWS.map((show) => (
+                {dummyShows.map((show) => (
                   <option key={show.id} value={show.id}>
                     {show.name}
                   </option>
@@ -176,7 +203,6 @@ export default function ItineraryEdit() {
                         Select date
                       </option>
                       {selectedShow.dates.map((date) => (
-
                         <option key={date} value={date}>
                           {date}
                         </option>
@@ -202,17 +228,24 @@ export default function ItineraryEdit() {
                 startAccessor="start"
                 endAccessor="end"
                 selectable
-                view={calendarView}
-                onView={(view) => setCalendarView(view)}
-                date={calendarDate}
-                onNavigate={(date) => setCalendarDate(date)}
+                view={view}
+                onView={setView}
+                date={date}
+                onNavigate={setDate}
                 onSelectEvent={(event) => handleEventDelete(event.id)}
                 style={{ height: 600 }}
               />
-              <button style={{ marginTop: '10px' }} onClick={handleSave}>
-                Save Itinerary
-              </button>
             </div>
+          </div>
+
+          {/* Save + Delete buttons */}
+          <div style={{ marginTop: '10px' }}>
+            <button onClick={handleSave} style={{ marginRight: '10px' }}>
+              Save Itinerary
+            </button>
+            <button onClick={handleDeleteItinerary} style={{ backgroundColor: 'red', color: 'white' }}>
+              Delete Itinerary
+            </button>
           </div>
         </>
       )}
