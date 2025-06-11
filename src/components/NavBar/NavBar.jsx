@@ -1,10 +1,11 @@
-import { useNavigate } from 'react-router'
+import { useNavigate, useLocation } from 'react-router'
 import { useContext } from 'react'
 import { UserContext } from '../../contexts/UserContext'
 import { removeToken } from '../../utils/auth'
 
 export default function Navbar() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { user, setUser } = useContext(UserContext)
 
   const handleChange = (e) => {
@@ -18,18 +19,31 @@ export default function Navbar() {
     }
   }
 
+  const currentValue = (() => {
+    if (!user) return '/auth'
+    if (location.pathname.startsWith('/itineraries/edit')) return '/itineraries/edit'
+    if (location.pathname === '/itineraries') return '/itineraries'
+    return '' // fallback
+  })()
+
   return (
     <nav style={{ padding: '10px', borderBottom: '1px solid #ccc' }}>
-      <select onChange={handleChange} defaultValue="">
-        <option value="" disabled>Select Page</option>
-        <option value="/">Home</option>
-        <option value="/itineraries">All Itineraries</option>
-        <option value="/itineraries/new">Create Itinerary</option>
-        <option value="/auth">{user ? 'Switch User' : 'Login/Register'}</option>
-        <option value="/itineraries/edit">Edit Itinerary</option>
-        {user && <option value="logout">Logout</option>}
+      <select onChange={handleChange} value={currentValue}>
+        <option value="/" disabled>Select Page</option>
+
+        {user ? (
+          <>
+            <option value="/itineraries">All Itineraries</option>
+            <option value="/itineraries/edit">Create / Edit Itinerary</option>
+            <option value="logout">Logout</option>
+          </>
+        ) : (
+          <option value="/auth">Login / Register</option>
+        )}
       </select>
+
       {user && <span style={{ marginLeft: '10px' }}>Logged in as: {user.username}</span>}
     </nav>
   )
 }
+

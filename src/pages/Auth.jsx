@@ -7,7 +7,7 @@ export default function Auth() {
 
   return (
     <main>
-      <h1>Welcome to Just One More Show</h1>
+      <h1>Just One More Show</h1>
       <div>
         <button onClick={() => setShowSignIn(true)}>Sign In</button>
         <button onClick={() => setShowSignIn(false)}>Register</button>

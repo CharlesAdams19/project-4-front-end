@@ -38,11 +38,16 @@ export default function ItineraryIndex() {
   const { user } = useContext(UserContext)
   const navigate = useNavigate()
   const [allItineraries, setAllItineraries] = useState([])
+const handleViewItinerary = (itineraryId) => {
+  navigate(`/itineraries/edit/${itineraryId}`)
+}
+
 
   useEffect(() => {
     async function fetchItineraries() {
       try {
         const data = await getAllItineraries()
+         console.log('Fetched itineraries:', data)
         setAllItineraries(data)
       } catch (err) {
         console.error('Error fetching all itineraries:', err)
@@ -52,23 +57,26 @@ export default function ItineraryIndex() {
   }, [])
 
   const handleEditClick = (itineraryId) => {
-    navigate(`/itineraries/edit?itineraryId=${itineraryId}`)
+    navigate(`/itineraries/edit/${itineraryId}`)
   }
 
   const handleCreateClick = () => {
-    navigate('/itineraries/edit') // No query param → create mode
+    navigate('/itineraries/edit/new') 
   }
 
   return (
-    <>
-      <h2>All Itineraries</h2>
-      <button onClick={handleCreateClick}>+ Create New Itinerary</button>
+  <>
+    <h2>All Itineraries</h2>
+    <button onClick={handleCreateClick}>+ Create New Itinerary</button>
 
-      <div style={{ marginTop: '20px' }}>
-        {allItineraries.length === 0 ? (
-          <p>No itineraries found.</p>
-        ) : (
-          allItineraries.map((itin) => (
+    <div style={{ marginTop: '20px' }}>
+      {allItineraries.length === 0 ? (
+        <p>No itineraries found.</p>
+      ) : (
+        allItineraries.map((itin) => {
+          console.log('itin.user:', itin.user)
+
+          return (
             <div
               key={itin.id}
               style={{
@@ -91,15 +99,19 @@ export default function ItineraryIndex() {
                   {itin.itinerary_items[0].venue}
                 </p>
               )}
-
-              <button onClick={() => handleEditClick(itin.id)}>
-                {user && user.id === itin.user?.id ? 'Edit' : 'View'} Itinerary
+              <button
+                onClick={() => {
+                  console.log('Navigating to Itinerary:', itin.id)
+                  handleViewItinerary(itin.id)
+                }}
+              >
+                View Itinerary
               </button>
             </div>
-          ))
-        )}
-      </div>
-    </>
+          )
+        })
+      )}
+    </div>
+  </>
   )
 }
-

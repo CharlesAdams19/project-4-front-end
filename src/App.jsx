@@ -2,7 +2,6 @@ import { Routes, Route, Navigate } from 'react-router'
 import Navbar from './components/NavBar/NavBar'
 import Auth from './pages/Auth'
 import ItineraryIndex from './components/ItineraryIndex/ItineraryIndex'
-import ItineraryCreate from './components/ItineraryCreate/ItineraryCreate'
 import ItineraryEdit from './components/ItineraryEdit/ItineraryEdit'
 import SignOutButton from './components/auth/SignOutButton'
 
@@ -31,11 +30,9 @@ function App() {
         <Route path="/" element={<Navigate to="/auth" />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/itineraries" element={<ItineraryIndex />} />
-        <Route path="/itineraries/new" element={<ItineraryCreate />} />
         <Route path="/itineraries/edit" element={<ItineraryEdit />} />
+        <Route path="/itineraries/edit/:itineraryId" element={<ItineraryEdit />} />
       </Routes>
-
-      {user && <SignOutButton />}
     </>
   )
 }

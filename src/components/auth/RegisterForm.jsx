@@ -38,7 +38,7 @@ export default function RegisterForm() {
       console.log("User registered & logged in!");
     } catch (err) {
       console.error(err);
-        console.log(err.response?.data); // <--- Add this line to see backend message
+        console.log(err.response?.data); 
 
     }
   }

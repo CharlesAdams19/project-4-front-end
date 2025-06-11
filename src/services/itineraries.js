@@ -10,7 +10,12 @@ export const getAllItineraries = async () => {
         Authorization: `Bearer ${getToken()}`
       }
     })
-    return response.data
+
+    // Map _id to id for consistent frontend use
+    return response.data.map(itin => ({
+      id: itin.id || itin._id,
+      ...itin
+    }))
   } catch (err) {
     console.error(err.response ? err.response.data : err)
     throw err
@@ -61,12 +66,17 @@ export const updateItinerary = async (itineraryId, formData) => {
 
 export const getUserItineraries = async () => {
   try {
-    const response = await axios.get(`${BASE_URL}/itineraries/`, {
+    const response = await axios.get(`${BASE_URL}/itineraries`, {
       headers: {
         Authorization: `Bearer ${getToken()}`
       }
     })
-    return response.data
+
+    // Map _id to id for consistent frontend use
+    return response.data.map(itin => ({
+      id: itin.id || itin._id,
+      ...itin
+    }))
   } catch (err) {
     console.error(err.response ? err.response.data : err)
     throw err
