@@ -79,9 +79,13 @@ export default function ItineraryEdit() {
   // Fetch selected itinerary
   useEffect(() => {
     async function fetchSelectedItinerary() {
+      // if (!selectedItineraryId || selectedItineraryId === 'new') {
+      //   setSelectedItineraryName("")
+      //   setEvents([])
       if (!selectedItineraryId || selectedItineraryId === 'new') {
-        setSelectedItineraryName("")
-        setEvents([])
+  setSelectedItineraryName("")
+  setSelectedItineraryUserId(user?.id)  // NEW LINE → treat new itinerary as owned by current user
+  setEvents([])
         return
       }
       try {
