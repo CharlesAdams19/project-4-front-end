@@ -232,9 +232,10 @@ export default function ItineraryEdit() {
       </div>
       {isViewingAnotherUsersItin && (
   <p style={{ textAlign: 'center', color: 'gray', fontStyle: 'italic', marginTop: '5px' }}>
-    You are currently viewing another user's itinerary.
-    Use the dropdown to create your own or switch to your itineraries.
+    Use the dropdown to create your an itinerary or switch itineraries.
   </p>
+  
+  
 )}
 
       {/* Itinerary Name */}
@@ -263,7 +264,8 @@ export default function ItineraryEdit() {
 
       {!isOwner && selectedItineraryId !== 'new' && (
         <p style={{ textAlign: 'center', color: 'gray', fontStyle: 'italic' }}>
-          You are viewing another user's itinerary. Editing is disabled.
+             You are currently viewing another user's itinerary.
+             Editing is disabled.
         </p>
       )}
 
