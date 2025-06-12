@@ -396,6 +396,8 @@ export default function ItineraryEdit() {
   const [calendarView, setCalendarView] = useState("month")
   const [calendarDate, setCalendarDate] = useState(new Date())
   const { itineraryId } = useParams()
+  const [selectedItineraryUserId, setSelectedItineraryUserId] = useState(null)
+  const isOwner = user && selectedItineraryUserId === user.id
 
   const [shows, setShows] = useState([])
 
@@ -445,6 +447,7 @@ export default function ItineraryEdit() {
       try {
         const data = await getSingleItinerary(selectedItineraryId)
         setSelectedItineraryName(data.name || "")
+        setSelectedItineraryUserId(data.user.id)
         setEvents(
           data.itinerary_items.map((item) => ({
             id: item.id,
@@ -581,6 +584,13 @@ export default function ItineraryEdit() {
         </div>
       )}
 
+      {!isOwner && selectedItineraryId !== 'new' && (
+        <p style={{ textAlign: 'center', color: 'gray', fontStyle: 'italic' }}>
+          You are viewing another user's itinerary. Editing is disabled.
+        </p>
+      )}
+
+
       {/* Main layout */}
       <div
         style={{
@@ -654,23 +664,25 @@ export default function ItineraryEdit() {
                     ))}
                 </select>
               </label>
-              <button
-                type="button"
-                style={{
-                  display: "block",
-                  width: "100%",
-                  padding: "8px",
-                  marginTop: "10px",
-                  backgroundColor: "#007bff",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "4px",
-                  cursor: "pointer"
-                }}
-                onClick={handleAddToCalendar}
-              >
-                Add to Calendar
-              </button>
+              {isOwner && (
+                <button
+                  type="button"
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    padding: "8px",
+                    marginTop: "10px",
+                    backgroundColor: "#007bff",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "4px",
+                    cursor: "pointer"
+                  }}
+                  onClick={handleAddToCalendar}
+                >
+                  Add to Calendar
+                </button>
+              )}
             </div>
           )}
         </div>
@@ -683,7 +695,11 @@ export default function ItineraryEdit() {
             startAccessor="start"
             endAccessor="end"
             selectable
-            onSelectEvent={(event) => handleEventDelete(event.id)}
+            onSelectEvent={(event) => {
+              if (isOwner) {
+                handleEventDelete(event.id)
+              }
+            }}
             style={{ height: 600 }}
             view={calendarView}
             onView={setCalendarView}
@@ -691,7 +707,6 @@ export default function ItineraryEdit() {
             onNavigate={setCalendarDate}
           />
 
-          {/* Buttons */}
           <div
             style={{
               display: "flex",
@@ -700,21 +715,23 @@ export default function ItineraryEdit() {
               marginTop: "10px"
             }}
           >
-            <button
-              style={{
-                padding: "8px 16px",
-                backgroundColor: "#28a745",
-                color: "#fff",
-                border: "none",
-                borderRadius: "4px",
-                cursor: "pointer"
-              }}
-              onClick={handleSave}
-            >
-              Save Itinerary
-            </button>
+            {isOwner && (
+              <button
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#28a745",
+                  color: "#fff",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer"
+                }}
+                onClick={handleSave}
+              >
+                Save Itinerary
+              </button>
+            )}
 
-            {selectedItineraryId !== "new" && (
+            {isOwner && selectedItineraryId !== "new" && (
               <button
                 style={{
                   padding: "8px 16px",
@@ -730,6 +747,7 @@ export default function ItineraryEdit() {
               </button>
             )}
           </div>
+
         </div>
       </div>
 
