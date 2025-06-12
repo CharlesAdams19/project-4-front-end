@@ -32,7 +32,16 @@ export default function SignInForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit}>
+    <form
+  onSubmit={handleSubmit}
+  style={{
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '10px',
+    alignItems: 'center',
+    marginTop: '15px'
+  }}
+>
       <input
         name="username"
         placeholder="Username"
