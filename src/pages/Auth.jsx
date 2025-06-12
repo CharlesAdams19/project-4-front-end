@@ -27,20 +27,21 @@ export default function Auth() {
 
   return (
     <main style={{ textAlign: 'center', padding: '20px' }}>
-      <h1>Just One More Show</h1>
+      {/* <h1>Just One More Show</h1> */}
 
       {/* Cloudinary Image */}
       <img
-        src="https://res.cloudinary.com/dfffu2vb9/image/upload/v1749718860/Image_12-06-2025_at_10.00_eboay4.jpg"
+        src="https://res.cloudinary.com/dfffu2vb9/image/upload/v1749718860/just-one-more-show.jpg"
         alt="Just One More Show"
         style={{
           maxWidth: '300px',
+          width: '100%',
           height: 'auto',
-          margin: '20px auto'
+          marginBottom: '20px'
         }}
       />
 
-      <div style={{ margin: '20px' }}>
+      <div style={{ marginBottom: '20px' }}>
         <button onClick={() => setShowSignIn(true)} style={{ marginRight: '10px' }}>
           Sign In
         </button>
