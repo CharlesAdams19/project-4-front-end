@@ -12,6 +12,7 @@ export default function SignInForm() {
     username: '',
     password: '',
   })
+  const [error, setError] = useState("")
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value })
@@ -19,6 +20,7 @@ export default function SignInForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    setError("") 
     try {
       const  data  = await login(formData)
       setToken(data.access, data.refresh)
@@ -28,6 +30,12 @@ export default function SignInForm() {
 
     } catch (err) {
       console.error(err.response ? err.response.data : err)
+if (err.response?.data?.detail === 'No active account found with the given credentials') {
+      setError('Incorrect username or password.')
+    } else {
+      setError('An error occurred. Please try again.')
+    }
+
     }
   }
 
@@ -54,6 +62,11 @@ export default function SignInForm() {
         onChange={handleChange}
       />
       <button type="submit">Sign In</button>
+      {error && (
+  <p style={{ color: 'red', marginTop: '10px' }}>
+    {error}
+  </p>
+)}
     </form>
   )
 }
