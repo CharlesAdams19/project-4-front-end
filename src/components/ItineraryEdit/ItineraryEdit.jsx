@@ -202,7 +202,8 @@ export default function ItineraryEdit() {
   pdf.save(`itinerary-agenda.pdf`)
 }
 
-  
+  const isViewingAnotherUsersItin = !isOwner && selectedItineraryId !== 'new'
+
 
   return (
     <>
@@ -215,6 +216,11 @@ export default function ItineraryEdit() {
             value={selectedItineraryId}
             onChange={(e) => setSelectedItineraryId(e.target.value)}
           >
+             {isViewingAnotherUsersItin && (
+    <option value={selectedItineraryId}>
+      Viewing: {selectedItineraryName || "Unnamed Itinerary"}
+    </option>
+             )}
             <option value="new">Create new itinerary</option>
             {userItineraries.map((itin) => (
               <option key={itin.id} value={itin.id}>
@@ -224,6 +230,12 @@ export default function ItineraryEdit() {
           </select>
         </label>
       </div>
+      {isViewingAnotherUsersItin && (
+  <p style={{ textAlign: 'center', color: 'gray', fontStyle: 'italic', marginTop: '5px' }}>
+    You are currently viewing another user's itinerary.
+    Use the dropdown to create your own or switch to your itineraries.
+  </p>
+)}
 
       {/* Itinerary Name */}
       {selectedItineraryId === 'new' ? (
